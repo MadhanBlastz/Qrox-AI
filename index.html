@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Qrox AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+<link rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="hdr">
+  <div class="hdr-l">
+    <button class="hbtn" onclick="toggleSB()" style="padding:5px 8px;flex-shrink:0">☰</button>
+    <div class="bgem"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qbg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#4f8ef7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#qbg)"/><g transform="translate(6,7)"><polygon points="10,2 18,6 10,10 2,6" fill="white" opacity="0.95"/><polyline points="2,10 10,14 18,10" fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round" opacity="0.85"/><polyline points="2,14 10,18 18,14" fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round" opacity="0.7"/></g></svg></div>
+    <span class="bname"><span style="color:#f1f5f9;font-weight:800">Qrox</span><span style="background:linear-gradient(90deg,#7c3aed,#4f8ef7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800">AI</span></span>
+    <span class="bver">v5.0</span>
+  </div>
+  <!-- Model pill — clickable, opens model picker dropdown in header -->
+  <div style="position:relative;flex:1;min-width:0;max-width:240px" id="headerModelWrap">
+    <div class="mpill" id="mpillBtn" onclick="toggleModelPicker()" title="Click to change model" style="width:100%;cursor:pointer;gap:6px">
+      <div class="mdot" id="modelDot"></div>
+      <div style="min-width:0;flex:1">
+        <div class="mname" id="modelName">No model</div>
+        <div class="mprov" id="modelProv">Auto-select ▾</div>
+      </div>
+      <span class="fbbadge" id="fbBadge" style="display:none">FB</span>
+      <span style="color:var(--t4);font-size:.65rem;flex-shrink:0">▾</span>
+    </div>
+
+  </div>
+  <!-- Context Window Meter -->
+  <div class="ctx-meter-wrap" id="ctxMeterWrap" style="display:none" title="Context window usage">
+    <div class="ctx-bar-track"><div class="ctx-bar-fill low" id="ctxBarFill" style="width:0%"></div></div>
+    <span class="ctx-label" id="ctxLabel">0%</span>
+    <div class="ctx-tooltip" id="ctxTooltip">
+      <div class="ctx-tooltip-row"><span class="ctx-tooltip-lbl">Used</span><span class="ctx-tooltip-val" id="ctxTokUsed">—</span></div>
+      <div class="ctx-tooltip-row"><span class="ctx-tooltip-lbl">Model limit</span><span class="ctx-tooltip-val" id="ctxTokLimit">—</span></div>
+      <div class="ctx-tooltip-row"><span class="ctx-tooltip-lbl">Remaining</span><span class="ctx-tooltip-val" id="ctxTokRemain">—</span></div>
+      <div class="ctx-tooltip-bar"><div class="ctx-tooltip-fill" id="ctxTooltipFill" style="width:0%"></div></div>
+      <div class="ctx-tooltip-row"><span class="ctx-tooltip-lbl">Messages</span><span class="ctx-tooltip-val" id="ctxMsgCount">—</span></div>
+      <div id="ctxTooltipWarn"></div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <button class="hbtn new-btn-hdr" onclick="newChat()">＋ New</button>
+    <!-- Live Collaboration pill — shown when collab is active -->
+    <div class="collab-pill" id="collabPill" onclick="collabOpen()">
+      <div class="collab-pill-dot"></div>
+      <span>Live</span>
+      <span class="collab-pill-count" id="collabPillCount">1</span>
+    </div>
+    <button class="hbtn export-btn" onclick="exportChat()" title="Export chat">⬇</button>
+    <button class="hbtn" onclick="analyticsOpen()" title="Analytics Dashboard" style="display:none" id="analyticsBtn">📊</button>
+    <button class="hbtn" onclick="shareChat()" title="Share this chat" id="shareBtn" style="display:none">🔗 Share</button>
+    <!-- Settings button with dropdown -->
+    <div class="settings-wrap" id="settingsWrap">
+      <button class="hbtn acc" id="settingsBtn" onclick="settingsDropdownToggle()" title="Settings">⚙</button>
+      <div class="settings-dropdown" id="settingsDropdown">
+        <button class="settings-item" onclick="cpOpen();settingsDropdownClose()">
+          <span class="settings-item-icon">⌘</span>Command Palette
+          <span style="margin-left:auto;font-size:.6rem;color:var(--t4);font-family:var(--fh)">Ctrl+K</span>
+        </button>
+        <button class="settings-item" onclick="kmOpen();settingsDropdownClose()">
+          <span class="settings-item-icon">⌨</span>Keyboard Shortcuts
+          <span style="margin-left:auto;font-size:.6rem;color:var(--t4);font-family:var(--fh)">?</span>
+        </button>
+        <div class="settings-divider"></div>
+        <button class="settings-item" onclick="openVault('keys');settingsDropdownClose()">
+          <span class="settings-item-icon">🔑</span>API Vault
+        </button>
+        <button class="settings-item" onclick="openSimpSet();settingsDropdownClose()">
+          <span class="settings-item-icon">⚙</span>Quick Settings
+        </button>
+        <div class="settings-divider"></div>
+        <button class="settings-item" onclick="collabStart();settingsDropdownClose()">
+          <span class="settings-item-icon">🤝</span>Live Collaboration
+          <div class="collab-footer-badge" id="collabFooterBadge" style="margin-left:auto">
+            <div class="collab-footer-badge-dot"></div>
+            <span id="collabFooterText">Live</span>
+          </div>
+        </button>
+        <button class="settings-item" onclick="ppvOpen();settingsDropdownClose()">
+          <span class="settings-item-icon">🎯</span>Pixel Vision
+        </button>
+        <button class="settings-item" onclick="dspInspect();settingsDropdownClose()">
+          <span class="settings-item-icon">🧩</span>Prompt Inspector
+        </button>
+        <button class="settings-item" onclick="analyticsOpen();settingsDropdownClose()">
+          <span class="settings-item-icon">📊</span>Analytics
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Sidebar backdrop for mobile -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSB()"></div>
+
+<!-- ═══ LAYOUT ═══ -->
+<div class="layout">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="lsb" id="lsb">
+    <!-- tabs: History & Search first, Files second -->
+    <div class="lsb-tabs">
+      <button class="lsb-tab on" id="gsTabBtn" onclick="lsbTab(this,'history');gsOpen()">🕐 History</button>
+      <button class="lsb-tab"    onclick="lsbTab(this,'files')">📁 Files</button>
+    </div>
+
+    <!-- HISTORY + SEARCH pane (combined, default active) -->
+    <div class="lsb-pane on" id="lsb-history">
+      <!-- Search bar always visible at top -->
+      <div class="gs-search-row" style="padding:8px 10px;flex-shrink:0;border-bottom:1px solid var(--line)">
+        <div class="gs-input-wrap">
+          <span class="gs-icon">🔍</span>
+          <input
+            id="gsInput"
+            class="gs-input"
+            type="text"
+            placeholder="Search chats…"
+            autocomplete="off" spellcheck="false"
+            oninput="gsSearchOrHistory(this.value)"
+          />
+          <button class="gs-clear" id="gsClearBtn" onclick="gsClearAndHistory()" title="Clear" style="display:none">✕</button>
+        </div>
+      </div>
+      <!-- Search meta row -->
+      <div class="gs-meta" id="gsMeta" style="padding:4px 10px 0;flex-shrink:0"></div>
+      <!-- Search results (shown when typing) -->
+      <div class="gs-results" id="gsResults" style="display:none;flex:1;overflow-y:auto"></div>
+      <!-- History list (shown when search is empty) -->
+      <div id="lsb-history-content" style="flex:1;overflow-y:auto;display:flex;flex-direction:column">
+        <div class="hist-wrap">
+          <button class="hist-new-btn" onclick="newChat()">＋ &nbsp;New Chat</button>
+          <div id="histContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILE TREE pane (second) -->
+    <div class="lsb-pane lsb-pane-files" id="lsb-files">
+      <div class="ft-hdr">
+        <span class="ft-hdr-lbl">Explorer</span>
+        <div class="ft-hdr-acts">
+          <button class="ft-hdr-btn" onclick="expandAllTree()" title="Expand all">⊞</button>
+          <button class="ft-hdr-btn" onclick="collapseAllTree()" title="Collapse all">⊟</button>
+          <button class="ft-hdr-btn" onclick="clearFileTree()" title="Clear files" style="color:var(--red)">🗑</button>
+        </div>
+      </div>
+      <div id="ftree" style="flex:1;overflow-y:auto;padding:0 4px 8px">
+        <div class="ft-empty" id="ftEmpty">
+          <div class="ft-empty-icon">📂</div>
+          Ask the AI to generate a project and files will appear here automatically.
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main">
+
+    <!-- TAB BAR -->
+    <div class="main-tabs">
+      <button class="main-tab on" id="tab-chat"    onclick="switchMainTab('chat')">💬 Chat</button>
+      <button class="main-tab"    id="tab-preview" onclick="switchMainTab('preview')">
+        <span class="main-tab-dot" id="prevDot"></span> Preview
+      </button>
+      <div class="tab-spacer"></div>
+      <div class="build-status idle" id="buildStatus" style="display:none">● Ready</div>
+    </div>
+
+    <!-- CHAT PANE -->
+    <div class="chat-pane" id="chatPane">
+      <div class="chat" id="chatBox">
+                <div class="welcome" id="ws">
+          <!-- Logo — same as header -->
+          <div class="worb">
+            <svg width="52" height="52" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="wi" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#4f8ef7"/>
+                  <stop offset="100%" stop-color="#7c3aed"/>
+                </linearGradient>
+              </defs>
+              <rect width="32" height="32" rx="9" fill="url(#wi)"/>
+              <g transform="translate(6,7)">
+                <polygon points="10,2 18,6 10,10 2,6" fill="white" opacity="0.95"/>
+                <polyline points="2,10 10,14 18,10" fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round" opacity="0.85"/>
+                <polyline points="2,14 10,18 18,14" fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round" opacity="0.7"/>
+              </g>
+            </svg>
+          </div>
+          <!-- Title -->
+          <div class="wtitle" style="font-size:2rem;font-weight:800;margin-bottom:6px">
+            <span style="color:#f1f5f9">Qrox</span><span style="background:linear-gradient(90deg,#7c3aed,#4f8ef7);-webkit-background-clip:text;-webkit-text-fill-color:transparent">AI</span>
+          </div>
+          <!-- Subtitle -->
+          <p class="wsub" style="font-size:.88rem;color:var(--t3);max-width:400px;line-height:1.75;margin:0 auto 10px">
+            Connect to <strong style="color:var(--t2)">GPT-4o, Claude, Gemini, Mistral</strong> and more in one place.
+            Build apps, analyze images, refine prompts, and run autonomous AI pipelines — all without switching tabs.
+          </p>
+          <!-- Capability pills -->
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:20px;max-width:480px">
+            <span style="font-size:.62rem;padding:3px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--line2);color:var(--t3)">🖼 Image → Code</span>
+            <span style="font-size:.62rem;padding:3px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--line2);color:var(--t3)">🧠 Extended Thinking</span>
+            <span style="font-size:.62rem;padding:3px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--line2);color:var(--t3)">⚡ Build Mode</span>
+            <span style="font-size:.62rem;padding:3px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--line2);color:var(--t3)">🎯 Autonomous Goals</span>
+            <span style="font-size:.62rem;padding:3px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--line2);color:var(--t3)">📚 Knowledge Base</span>
+            <span style="font-size:.62rem;padding:3px 10px;border-radius:10px;background:var(--bg3);border:1px solid var(--line2);color:var(--t3)">🔊 Voice I/O</span>
+          </div>
+          <!-- CTAs -->
+          <div class="ws-cta-row">
+            <button class="ws-cta primary" onclick="wsQuickStart('build')">⚡ Start Building</button>
+            <button class="ws-cta secondary" onclick="wsQuickStart('chat')">💬 Just Chat</button>
+            <button class="ws-cta secondary" onclick="openVault('keys')">🔑 Add API Keys</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- INPUT AREA — must be inside chatPane -->
+      <div class="iarea">
+
+        <!-- PA PANEL — ChatGPT-style prompt refinement -->
+        <div class="pa-panel" id="paPanel" style="display:none">
+          <div class="pa-panel-hdr">
+            <div class="pa-panel-title">
+              <span>✨</span> Prompt AI
+              <span id="paRoundBadge"></span>
+            </div>
+            <button class="pa-panel-close" onclick="closePA()">✕</button>
+          </div>
+
+          <!-- Refined prompt editable area -->
+          <div class="pa-refined-wrap" id="paRefinedWrap" style="display:none">
+            <div class="pa-refined-label">Refined Prompt — edit freely</div>
+            <textarea class="pa-refined-ta" id="paRefinedTa" rows="3" placeholder="Refined prompt will appear here…" oninput="autoR(this)"></textarea>
+            <div class="pa-action-row">
+              <button class="pa-sugg-toggle-btn" id="paSuggToggle" onclick="toggleSuggestions()">💡 Suggestions</button>
+              <button class="pa-more-btn" id="paMoreBtn" onclick="paLoadMore()">🔄 Regenerate</button>
+              <div style="flex:1"></div>
+              <button class="pa-use-btn" onclick="paUsePrompt()">↩ Use this prompt</button>
+            </div>
+          </div>
+
+          <!-- Suggestions panel — hidden until btn clicked -->
+          <div class="pa-sugg-panel" id="paSuggPanel" style="display:none">
+            <div class="pa-sugg-hdr">
+              <span>💡 Suggestions — click to add to prompt</span>
+              <button class="pa-sugg-close" onclick="toggleSuggestions()">✕</button>
+            </div>
+            <div class="pa-sugg-chips" id="paSuggChips"></div>
+          </div>
+
+          <!-- Thinking state -->
+          <div id="paBody">
+            <div class="pa-thinking">
+              <div class="pa-spin"></div>
+              <span id="paThinkMsg">Refining your prompt…</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Framework selector row — only visible in build mode -->
+        <div id="chatToolbarWrap" style="overflow-x:auto;overflow-y:hidden;display:none">
+
+        <!-- ── AUTONOMOUS GOAL MODE PANEL ── -->
+        <div class="auto-bar" id="autoBar">
+          <div class="auto-bar-hdr" onclick="autoToggleBody()">
+            <span class="auto-bar-icon">🎯</span>
+            <span class="auto-bar-title">Autonomous Goal Mode</span>
+            <span class="auto-bar-badge" id="autoBadge">READY</span>
+          </div>
+          <div class="auto-bar-body" id="autoBody">
+            <textarea
+              id="autoGoalInput"
+              class="auto-goal-input"
+              rows="2"
+              placeholder="Describe your goal… e.g. Build a kanban board with drag-and-drop, dark mode, and local storage persistence"
+            ></textarea>
+            <div class="auto-controls">
+              <span class="auto-iter-label">Max cycles:</span>
+              <select class="auto-iter-select" id="autoMaxCycles">
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="5">5</option>
+              </select>
+              <button class="parallel-toggle" id="parallelToggleBtn" onclick="parallelToggle()" title="Run independent agents simultaneously">
+                <span class="pt-dot"></span>⚡ Parallel
+              </button>
+              <button class="auto-run-btn" id="autoRunBtn" onclick="autoStart()">🎯 Run Autonomously</button>
+              <button class="auto-stop-btn" id="autoStopBtn" style="display:none" onclick="autoStop()">⏹ Stop</button>
+              <button class="ape-tb-btn" onclick="apeOpen()" style="font-size:.65rem;padding:4px 10px">🔧 Edit Pipeline</button>
+            </div>
+            <div class="auto-progress" id="autoProgress">
+              <div class="auto-prog-title">Progress — <span id="autoCycleLabel">Cycle 0 / 0</span></div>
+              <div class="auto-prog-bar-wrap"><div class="auto-prog-bar" id="autoProgBar" style="width:0%"></div></div>
+              <div class="auto-cycle-list" id="autoCycleList"></div>
+            </div>
+          </div>
+        </div>
+          <div class="fw-pill-wrap" id="fwPillWrap">
+            <button class="fw-pill"     data-fw="html-single" onclick="selectFwPill(this)" title="Single self-contained HTML file — all CSS+JS inline">📄 Single HTML</button>
+            <button class="fw-pill"     data-fw="html"        onclick="selectFwPill(this)" title="HTML + CSS + JS — separate files">🌐 HTML·CSS·JS</button>
+            <button class="fw-pill"     data-fw="react-cdn"   onclick="selectFwPill(this)" title="React JSX (Babel CDN)">⚛ React</button>
+            <button class="fw-pill"     data-fw="vue"         onclick="selectFwPill(this)" title="Vue 3 (CDN)">💚 Vue</button>
+            <button class="fw-pill fw-pill-sb" data-fw="react-npm" onclick="selectFwPill(this)" title="React + Vite (StackBlitz)">🔷 React+Vite</button>
+            <button class="fw-pill fw-pill-sb" data-fw="nextjs"    onclick="selectFwPill(this)" title="Next.js (StackBlitz)">▲ Next.js</button>
+            <button class="fw-pill fw-pill-sb" data-fw="node"      onclick="selectFwPill(this)" title="Node / Express (StackBlitz)">🟢 Node</button>
+            <button class="fw-pill fw-pill-sb" data-fw="fullstack" onclick="selectFwPill(this)" title="React + Node Fullstack (StackBlitz)">🚀 Fullstack</button>
+            <button class="fw-pill fw-pill-sb" data-fw="svelte"    onclick="selectFwPill(this)" title="Svelte (StackBlitz)">🔥 Svelte</button>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <div class="fchips" id="atchFiles"></div>
+          <div id="ragCtxPill" style="display:none"></div>
+          <span class="tools-active-badge" id="toolsActiveBadge">⚙ Tools ON</span>
+        </div>
+
+        <!-- Context window warning banner -->
+        <div class="ctx-warning-banner" id="ctxWarningBanner">
+          <span id="ctxWarningText">⚠ Context window nearly full</span>
+          <button class="ctx-warning-dismiss" onclick="ctxDismissWarning()" title="Dismiss">✕</button>
+        </div>
+
+        <!-- Token Budget Estimator — shown while typing -->
+        <div class="tbe-wrap tbe-ok" id="tbeBudget" style="display:none">
+          <span class="tbe-icon">🪙</span>
+          <span class="tbe-label" id="tbeLabel">0 tokens</span>
+          <div class="tbe-bar-wrap"><div class="tbe-bar" id="tbeBar" style="width:0%;background:#10b981"></div></div>
+          <span class="tbe-cost" id="tbeCost"></span>
+        </div>
+
+        <!-- Collab: remote peer typing indicator -->
+        <div class="collab-typing-banner" id="collabTypingBanner">
+          <span id="collabTypingText">Someone is typing…</span>
+          <span class="tybbl" style="display:inline-flex;gap:2px;margin-left:2px"><span class="tdot"></span><span class="tdot" style="animation-delay:.15s"></span><span class="tdot" style="animation-delay:.3s"></span></span>
+        </div>
+
+        <!-- Intent detection badge — updates as user types -->
+        <div class="intent-badge-wrap" id="intentBadgeWrap">
+          <span class="intent-badge-label">Detected:</span>
+          <span class="intent-badge" id="intentBadge" onclick="intentCycleOverride()"></span>
+          <span class="intent-override-hint" id="intentOverrideHint" style="display:none" onclick="intentClearOverride()">✕ override</span>
+        </div>
+
+        <!-- Voice status bar — shows when listening or speaking -->
+        <div class="voice-bar" id="voiceBar">
+          <div class="voice-wave idle" id="voiceWave">
+            <div class="voice-wave-bar"></div>
+            <div class="voice-wave-bar"></div>
+            <div class="voice-wave-bar"></div>
+            <div class="voice-wave-bar"></div>
+            <div class="voice-wave-bar"></div>
+          </div>
+          <div class="voice-bar-status">
+            <div class="voice-bar-dot" id="voiceBarDot"></div>
+            <span id="voiceBarText" class="voice-bar-text">Ready</span>
+          </div>
+          <button class="voice-toggle-btn" id="voiceAutoReadBtn" onclick="voiceToggleAutoRead()" title="Auto-read AI responses">🔊 Auto-read</button>
+          <button class="voice-toggle-btn" onclick="voiceOpenSettings()" title="Voice settings">⚙ Voice</button>
+          <button class="voice-toggle-btn" onclick="voiceStopAll()" style="border-color:rgba(239,68,68,.3);color:#fca5a5">⏹ Stop</button>
+        </div>
+
+        <!-- Voice settings panel -->
+        <div class="voice-settings" id="voiceSettings">
+          <div class="voice-setting-row">
+            <span class="voice-setting-lbl">Voice</span>
+            <select class="voice-select" id="voiceSelect" onchange="voiceSaveSettings()"></select>
+          </div>
+          <div class="voice-setting-row">
+            <span class="voice-setting-lbl">Speed</span>
+            <input type="range" class="voice-range" id="voiceRate" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('voiceRateVal').textContent=this.value+'×';voiceSaveSettings()">
+            <span class="voice-range-val" id="voiceRateVal">1×</span>
+          </div>
+          <div class="voice-setting-row">
+            <span class="voice-setting-lbl">Pitch</span>
+            <input type="range" class="voice-range" id="voicePitch" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('voicePitchVal').textContent=this.value;voiceSaveSettings()">
+            <span class="voice-range-val" id="voicePitchVal">1</span>
+          </div>
+          <div class="voice-setting-row">
+            <span class="voice-setting-lbl">Lang</span>
+            <select class="voice-select" id="voiceLangSelect" onchange="voiceSaveSettings()" style="max-width:140px">
+              <option value="en-US">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="es-ES">Spanish</option>
+              <option value="fr-FR">French</option>
+              <option value="de-DE">German</option>
+              <option value="ja-JP">Japanese</option>
+              <option value="zh-CN">Chinese</option>
+              <option value="pt-BR">Portuguese</option>
+              <option value="ko-KR">Korean</option>
+              <option value="ar-SA">Arabic</option>
+            </select>
+          </div>
+          <div class="voice-toggle-row">
+            <button class="voice-toggle-btn" id="voiceSettingsCloseBtn" onclick="voiceOpenSettings()">✕ Close</button>
+            <button class="voice-toggle-btn" onclick="voiceTestSpeak()">▶ Test voice</button>
+          </div>
+        </div>
+
+
+        <div class="irow" id="mainIrow">
+          <!-- + Options button (Thinking / Structured / Attach) — Chat mode -->
+          <div class="plus-menu-wrap" id="plusMenuWrap">
+            <button class="plus-btn" id="plusBtn" onclick="togglePlusMenu()" title="Options">+</button>
+            <div class="plus-dropdown" id="plusDropdown" style="display:none">
+              <label class="plus-item" style="cursor:pointer" title="Attach image (or paste Ctrl+V / drag & drop)">
+                🖼 Image
+                <input type="file" id="fUpImg" style="display:none" multiple accept="image/*" onchange="handleFiles(event);closePlusMenu()"/>
+              </label>
+              <label class="plus-item plus-item-highlight" style="cursor:pointer;background:rgba(59,130,246,.07);border-left:2px solid var(--a1);padding-left:10px" title="Upload a screenshot or design — AI will generate matching code">
+                <span style="display:flex;align-items:center;gap:5px;width:100%">
+                  <span>✦</span>
+                  <span>Image → Code</span>
+                  <span style="margin-left:auto;font-size:.55rem;padding:1px 5px;border-radius:6px;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:#93c5fd;font-family:var(--fh);font-weight:700;white-space:nowrap">AI</span>
+                </span>
+                <input type="file" id="fUpImgCode" style="display:none" accept="image/*" onchange="imgToCode(event);closePlusMenu()"/>
+              </label>
+              <label class="plus-item" style="cursor:pointer" title="Attach files — indexed into KB + sent with message">
+                📎 Attach File
+                <span class="rag-kb-badge" id="ragKbBadge" style="display:none">0</span>
+                <input type="file" id="fUpInline" style="display:none" multiple accept="image/*,.pdf,.txt,.md,.js,.ts,.py,.html,.css,.json,.jsx,.tsx,.vue,.svelte,.sql,.sh,.yaml,.yml,.java,.cpp,.c,.go,.rs" onchange="handleFiles(event);closePlusMenu()"/>
+              </label>
+              <button class="plus-item" onclick="openRagModal()" title="Add text or URL to knowledge base">📚 Knowledge Base</button>
+              <div style="border-top:1px solid var(--line);margin:3px 0"></div>
+              <button class="plus-item" id="plus-think" onclick="tog('think');updatePlusItems()">🧠 Thinking</button>
+              <button class="plus-item" id="plus-structured" onclick="tog('structured');updatePlusItems()">📋 Structured</button>
+              <button class="plus-item" id="plus-tools" onclick="toolsToggle();updatePlusItems()">⚙ Tools</button>
+              <button class="plus-item" id="plus-critique" onclick="critiqueToggle();updatePlusItems()">🔍 Self-Critique</button>
+            </div>
+          </div>
+
+          <!-- + Options button — Prompt AI mode (hidden in chat mode) -->
+          <div class="plus-menu-wrap" id="paPlusMenuWrap" style="display:none">
+            <button class="plus-btn" id="paPlusBtn" onclick="togglePAPlusMenu()" title="Prompt AI Options">+</button>
+            <div class="plus-dropdown" id="paPlusDropdown" style="display:none">
+              <label class="plus-item" style="cursor:pointer">
+                📎 Attach image / file
+                <input type="file" id="fUpPA" style="display:none" multiple accept="image/*,.pdf,.txt,.md,.js,.ts,.py,.html,.css,.json,.jsx,.tsx,.vue" onchange="handleFiles(event);closePAPlusMenu()"/>
+              </label>
+              <button class="plus-item" id="pa-plus-think" onclick="togglePAOpt('paThink');updatePAPlusItems()">🧠 Deep Analysis</button>
+              <button class="plus-item" id="pa-plus-structured" onclick="togglePAOpt('paStructured');updatePAPlusItems()">📋 Structured Output</button>
+            </div>
+          </div>
+          <div class="ghost-wrap" style="flex:1;position:relative;min-width:0">
+          <textarea id="ghostText" aria-hidden="true" tabindex="-1" readonly></textarea>
+          <textarea id="uIn"
+            placeholder="Message the AI…"
+            rows="1"
+            onkeydown="onUnifiedKey(event);ghostKeydown(event)"
+            oninput="autoR(this);updCC();ragUpdateUI();intentBadgeUpdate(this.value);ctxUpdate();ghostSchedule(this.value);collabOnTyping(this.value);tbeUpdate(this.value)"></textarea>
+          </div>
+          <!-- Controls + Send buttons side by side -->
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+            <div style="position:relative" id="ctrlWrapInline">
+              <button class="ctrl-btn" id="ctrlBtnInline" onclick="ctrlPanelToggle()" title="Controls" style="width:34px;height:34px">
+                <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                  <line x1="2" y1="4" x2="14" y2="4"/>
+                  <circle cx="5" cy="4" r="1.5" fill="currentColor" stroke="none"/>
+                  <line x1="2" y1="11" x2="14" y2="11"/>
+                  <circle cx="11" cy="11" r="1.5" fill="currentColor" stroke="none"/>
+                </svg>
+              </button>
+                          <div class="ctrl-panel" id="ctrlPanel">
+              <div class="ctrl-panel-title">Controls</div>
+
+              <!-- Build Mode — TOP -->
+              <div class="ctrl-row" style="background:rgba(16,185,129,.06);border-radius:7px;margin-bottom:4px;padding:7px 8px" onclick="document.getElementById('btn-build').click();ctrlUpdateToggles()">
+                <span class="ctrl-row-label" style="font-weight:700;color:var(--t1)"><span class="ctrl-row-icon">⚡</span>Build Mode</span>
+                <div class="ctrl-toggle" id="ctrlBuild"></div>
+              </div>
+
+              <!-- Model Selector — after build mode, same highlight -->
+              <div class="ctrl-row" style="background:rgba(79,142,247,.07);border-radius:7px;margin-top:4px;padding:7px 8px" onclick="toggleModelPicker(this)">
+                <span class="ctrl-row-label" style="font-weight:700;color:var(--t1)"><span class="ctrl-row-icon">⚡</span>
+                  <span id="ctrlModelName" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">Auto</span>
+                </span>
+                <span style="color:var(--t4);font-size:.65rem">▾</span>
+              </div>
+
+              <!-- Multi-Agent — after model, same highlight -->
+              <div class="ctrl-row" style="background:rgba(139,92,246,.07);border-radius:7px;margin-top:4px;padding:7px 8px" onclick="toggleAgentsMode();ctrlUpdateToggles()">
+                <span class="ctrl-row-label" style="font-weight:700;color:var(--t1)"><span class="ctrl-row-icon">🤖</span>Multi-Agent</span>
+                <div class="ctrl-toggle" id="ctrlAgents"></div>
+              </div>
+
+              <div style="height:1px;background:var(--line);margin:8px 0"></div>
+
+              <!-- Persona — inline grid (no popup) -->
+              <div class="ctrl-persona-row" id="ctrlPersonaWrap">
+                <div style="font-size:.6rem;color:var(--t4);font-family:var(--fh);font-weight:700;margin-bottom:6px;padding:0 2px;display:flex;align-items:center;justify-content:space-between">
+                  <span>PERSONA</span>
+                  <button class="persona-new-btn" onclick="personaNewForm();ctrlPanelClose()" style="font-size:.56rem;padding:2px 6px">＋ Custom</button>
+                </div>
+                <!-- Inline persona grid — always visible inside ctrl panel -->
+                <div class="persona-grid" id="personaGrid" style="grid-template-columns:repeat(2,1fr);max-height:180px;overflow-y:auto;gap:5px"></div>
+                <!-- Persona editor (hidden until new/edit) -->
+                <div class="persona-editor" id="personaEditor" style="display:none">
+                  <div class="persona-editor-row">
+                    <div class="persona-editor-icon" id="personaEditorIcon" onclick="personaPickEmoji()" title="Click to change emoji">🤖</div>
+                    <div class="persona-editor-fields">
+                      <input class="persona-editor-input" id="personaEditorName" type="text" placeholder="Persona name" maxlength="32"/>
+                      <input class="persona-editor-input" id="personaEditorDesc" type="text" placeholder="Short description" maxlength="80"/>
+                    </div>
+                  </div>
+                  <textarea class="persona-editor-ta" id="personaEditorSys" rows="3" placeholder="System prompt…"></textarea>
+                  <div class="persona-editor-actions">
+                    <button class="persona-editor-save" onclick="personaSaveForm()">💾 Save</button>
+                    <button class="persona-editor-cancel" onclick="personaEditorClose()">Cancel</button>
+                    <button class="persona-editor-del" id="personaEditorDel" onclick="personaDeleteEditing()" style="display:none">🗑</button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="height:1px;background:var(--line);margin:7px 0"></div>
+
+              <!-- Heatmap toggle -->
+              <div class="ctrl-row" onclick="heatmapToggle();ctrlUpdateToggles()">
+                <span class="ctrl-row-label"><span class="ctrl-row-icon">🌡</span>Token Heatmap</span>
+                <div class="ctrl-toggle" id="ctrlHeatmap"></div>
+              </div>
+
+              <!-- Ghost mode toggle -->
+              <div class="ctrl-row" onclick="ghostToggle();ctrlUpdateToggles()">
+                <span class="ctrl-row-label"><span class="ctrl-row-icon">👻</span>Ghost Mode</span>
+                <div class="ctrl-toggle" id="ctrlGhost"></div>
+              </div>
+
+              <!-- Self-Critique toggle -->
+              <div class="ctrl-row" onclick="critiqueToggle();ctrlUpdateToggles()">
+                <span class="ctrl-row-label"><span class="ctrl-row-icon">🔍</span>Self-Critique</span>
+                <div class="ctrl-toggle" id="ctrlCritique"></div>
+              </div>
+
+              <div style="height:1px;background:var(--line);margin:7px 0"></div>
+
+              <!-- Ambient audio -->
+              <div style="position:relative" id="audioWrap">
+                <div class="ctrl-row" onclick="event.stopPropagation();audioPickerToggle()">
+                  <span class="ctrl-row-label" onclick="event.stopPropagation();audioPickerToggle()">
+                    <span class="ctrl-row-icon">🎵</span>Ambient Audio
+                  </span>
+                  <div class="ctrl-toggle" id="ctrlAudio" onclick="event.stopPropagation();ctrlAudioToggle()"></div>
+                </div>
+                <div class="audio-picker" id="audioPicker" style="bottom:auto;top:calc(100% + 4px);left:0;right:0;min-width:unset">
+                  <div class="audio-picker-title">Ambient Sound</div>
+                  <div id="audioModes"></div>
+                  <div class="audio-vol-row">
+                    <span class="audio-vol-lbl">Vol</span>
+                    <input type="range" class="audio-vol-range" id="audioVol" min="0" max="1" step="0.05" value="0.3" oninput="audioSetVol(this.value)">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mic / Voice -->
+              <div class="ctrl-row" onclick="voiceToggle()">
+                <span class="ctrl-row-label"><span class="ctrl-row-icon">🎙</span>Voice Input</span>
+                <div class="ctrl-toggle" id="ctrlVoice"></div>
+              </div>
+
+              <!-- Model picker inline -->
+
+
+            </div>
+            </div>
+            <button class="sbtn" id="sndBtn" title="Send">➤</button>
+          </div>
+        </div>
+        <input type="checkbox" id="btn-build" style="display:none" onchange="onBuildToggle(this)">
+
+        <!-- Model picker is in header -->
+
+        <div class="ifooter">
+          <span id="inputModeLabel" style="display:flex;align-items:center;gap:8px">
+            <!-- Mode toggle switch -->
+            <label class="mode-switch" id="modeSwitch" title="Switch mode" onclick="toggleInputMode()">
+              <div class="mode-switch-thumb" id="modeSwitchThumb"></div>
+            </label>
+            <span class="build-mode-badge" id="buildModeBadge">
+              <span class="build-mode-badge-dot"></span>
+              Build Mode
+            </span>
+            <span id="imodeTip">Enter to send · Shift+Enter newline</span>
+          </span>
+
+          <!-- Controls panel anchor (button moved to irow beside send) -->
+          <div style="position:relative" id="ctrlWrap">
+            <div id="ctrlBtn" style="display:none"></div>
+            
+          </div>
+
+          <!-- Cost estimator pill -->
+          <div style="position:relative">
+            <button class="cost-pill" id="costPill" onclick="costShowDetail()" title="Session cost estimate">
+              <span class="cost-pill-icon">💰</span>
+              <span id="costPillLabel">$0.00</span>
+              <div class="cost-tooltip" id="costTooltip">
+                <div class="cost-tooltip-title">Session Cost Estimate</div>
+                <div id="costTooltipBody"></div>
+                <div class="cost-tooltip-divider"></div>
+                <div class="cost-tooltip-note">Estimates based on published pricing. Free/open models show $0.00.</div>
+              </div>
+            </button>
+          </div>
+
+          <span class="ccnt" id="charCnt">0</span>
+        </div>
+      </div>
+    </div><!-- end chatPane -->
+
+    <!-- PREVIEW PANE -->
+    <div class="prev-pane" id="prevPane">
+
+      <!-- Framework selector row -->
+      <div class="fw-bar" id="fwBar">
+        <span class="fw-bar-lbl">Framework</span>
+        <div class="fw-btns" id="fwBtns">
+          <button class="fw-btn"     data-fw="html-single" onclick="setFramework(this)"  title="Single self-contained HTML file">
+            <span class="fw-icon">📄</span><span class="fw-name">Single HTML</span>
+          </button>
+          <button class="fw-btn"     data-fw="html"        onclick="setFramework(this)"  title="HTML + CSS + JS — inline preview">
+            <span class="fw-icon">🌐</span><span class="fw-name">HTML·CSS·JS</span>
+          </button>
+          <button class="fw-btn"    data-fw="react-cdn" onclick="setFramework(this)"  title="React JSX — Babel CDN, inline preview">
+            <span class="fw-icon">⚛</span><span class="fw-name">React</span>
+          </button>
+          <button class="fw-btn"    data-fw="vue"       onclick="setFramework(this)"  title="Vue 3 — CDN, inline preview">
+            <span class="fw-icon">💚</span><span class="fw-name">Vue</span>
+          </button>
+          <button class="fw-btn"    data-fw="react-npm" onclick="setFramework(this)"  title="React + Vite — opens in StackBlitz">
+            <span class="fw-icon">🔷</span><span class="fw-name">React+Vite</span><span class="fw-sb-tag">SB</span>
+          </button>
+          <button class="fw-btn"    data-fw="nextjs"    onclick="setFramework(this)"  title="Next.js — opens in StackBlitz">
+            <span class="fw-icon">▲</span><span class="fw-name">Next.js</span><span class="fw-sb-tag">SB</span>
+          </button>
+          <button class="fw-btn"    data-fw="node"      onclick="setFramework(this)"  title="Node / Express — opens in StackBlitz">
+            <span class="fw-icon">🟢</span><span class="fw-name">Node</span><span class="fw-sb-tag">SB</span>
+          </button>
+          <button class="fw-btn"    data-fw="fullstack" onclick="setFramework(this)"  title="React + Node fullstack — opens in StackBlitz">
+            <span class="fw-icon">🚀</span><span class="fw-name">Fullstack</span><span class="fw-sb-tag">SB</span>
+          </button>
+          <button class="fw-btn"    data-fw="svelte"    onclick="setFramework(this)"  title="Svelte — opens in StackBlitz">
+            <span class="fw-icon">🔥</span><span class="fw-name">Svelte</span><span class="fw-sb-tag">SB</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Controls row -->
+      <div class="prev-toolbar">
+        <div class="dev-size-btns">
+          <button class="size-btn on" id="sz-desktop"  onclick="setPreviewSize('desktop',this)"   title="Desktop">
+            <span class="size-ico">🖥</span><span class="size-txt"> Desktop</span>
+          </button>
+          <button class="size-btn"    id="sz-laptop"   onclick="setPreviewSize('laptop',this)"    title="Laptop 1280px">
+            <span class="size-ico">💻</span><span class="size-txt"> Laptop</span>
+          </button>
+          <button class="size-btn"    id="sz-tablet"   onclick="setPreviewSize('tablet',this)"    title="Tablet 768px">
+            <span class="size-ico">📟</span><span class="size-txt"> Tablet</span>
+          </button>
+          <button class="size-btn"    id="sz-mobilel"  onclick="setPreviewSize('mobilel',this)"   title="Landscape 667px">
+            <span class="size-ico">📱</span><span class="size-txt"> Land.</span>
+          </button>
+          <button class="size-btn"    id="sz-mobile"   onclick="setPreviewSize('mobile',this)"    title="Mobile 390px">
+            <span class="size-ico">📲</span><span class="size-txt"> Mobile</span>
+          </button>
+        </div>
+        <input class="prev-url" id="prevUrl" value="about:blank" readonly/>
+        <div class="prev-actions">
+          <button class="pra" onclick="refreshPreview()" title="Refresh">↺</button>
+          <button class="pra" onclick="openExternal()"   title="Open in new tab">⧉</button>
+          <button class="pra active" id="previewRunBtn"  onclick="runPreview()">▶ Run</button>
+        </div>
+      </div>
+
+      <div class="prev-frame-wrap" id="prevFrameWrap">
+        <div class="prev-placeholder" id="prevPlaceholder">
+          <div class="pp-icon">🚀</div>
+          <h3>Preview</h3>
+          <p>Select a framework above, then click <strong>▶ Run</strong>.</p>
+          <button class="pp-run-btn" onclick="runPreview()">▶ Run Preview</button>
+        </div>
+        <!-- Device shell wraps the iframe for mockup frames -->
+        <div class="device-shell" id="deviceShell" style="display:none">
+          <div class="device-frame" id="deviceFrame">
+            <!-- Device-specific decorations injected by JS -->
+            <div class="device-screen" id="deviceScreen">
+              <iframe id="prevFrame" style="width:100%;height:100%;border:none;display:block" sandbox="allow-scripts allow-same-origin allow-forms allow-modals"></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- end chatPane -->
+
+  </main>
+
+<!-- TOAST -->
+<div class="twrap" id="twrap"></div>
+
+
+<!-- ═══ VAULT MODAL ═══ -->
+<div class="ov" id="vaultOv" onclick="ovClose(event,'vaultOv')">
+  <div class="vmod" onclick="event.stopPropagation()">
+    <div class="vtop">
+      <h2>🔑 API Vault <span class="vtop-badge">LOCAL STORAGE ONLY</span></h2>
+      <button class="vclose" onclick="closeVault()">✕</button>
+    </div>
+    <div class="vtabs">
+      <button class="vtab on" data-tab="keys"      onclick="vTab(this,'keys')">🔑 API Keys</button>
+      <button class="vtab"    data-tab="routing"   onclick="vTab(this,'routing')">🧠 Task Routing</button>
+      <button class="vtab"    data-tab="priority"  onclick="vTab(this,'priority')">📊 Priority</button>
+      <button class="vtab"    data-tab="vsettings" onclick="vTab(this,'vsettings')">⚙ Settings</button>
+    </div>
+    <div class="vbody">
+      <div id="tab-keys">
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:9px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);margin-bottom:16px">
+          <span style="font-size:1.2rem;flex-shrink:0">🌸</span>
+          <div>
+            <div style="font-size:.78rem;font-weight:700;color:#6ee7b7;font-family:var(--fh);margin-bottom:3px">Pollinations AI — zero-key fallback</div>
+            <div style="font-size:.72rem;color:var(--t2);line-height:1.6"><strong style="color:var(--t1)">GPT-OSS 20B</strong> works with no key, but is <strong style="color:#fde68a">rate-limited to 1 req/15s</strong> anonymously. For reliable access, add a free <strong style="color:#93c5fd">Gemini key</strong> (aistudio.google.com) or <strong style="color:#f87171">Groq key</strong> (console.groq.com) — both free & fast.</div>
+          </div>
+        </div>
+        <p style="font-size:.72rem;color:var(--t3);margin-bottom:16px;line-height:1.6">Keys are stored only in your browser's localStorage — never sent anywhere except directly to each provider's own API.</p>
+        <div id="pgrid-root"></div>
+      </div>
+
+      <!-- ── TASK ROUTING TAB ── -->
+      <div id="tab-routing" style="display:none">
+        <div style="margin-bottom:18px">
+          <div style="font-size:.82rem;font-weight:700;color:var(--t1);font-family:var(--fh);margin-bottom:6px;display:flex;align-items:center;gap:8px">🧠 Smart Task Routing <span style="font-size:.6rem;padding:2px 7px;border-radius:8px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#c4b5fd;font-weight:700">NEW</span></div>
+          <p style="font-size:.73rem;color:var(--t3);line-height:1.7">Assign the <strong style="color:var(--t2)">best available model</strong> to each task type. The agent automatically routes each request to its ideal model. Greyed-out slots need the provider's API key first.</p>
+        </div>
+
+        <!-- Routing cards -->
+        <div id="routingCards" style="display:flex;flex-direction:column;gap:10px"></div>
+
+        <div style="margin-top:18px;padding:12px 14px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:9px">
+          <div style="font-size:.72rem;font-weight:700;color:#93c5fd;font-family:var(--fh);margin-bottom:8px">📋 Routing Logic</div>
+          <div style="font-size:.7rem;color:var(--t3);line-height:1.8">
+            <div>✦ <strong style="color:var(--t2)">Prompt AI</strong> uses the prompt model slot — needs fast, instruction-following model</div>
+            <div>✦ <strong style="color:var(--t2)">Thinking / Reasoning</strong> uses the reasoning slot — needs deep analytical model</div>
+            <div>✦ <strong style="color:var(--t2)">Code Generation</strong> uses the coding slot — needs code-specialist model</div>
+            <div>✦ <strong style="color:var(--t2)">General Chat</strong> uses the chat slot — balanced speed + quality</div>
+            <div>✦ If preferred model fails → falls back to next best available for that task</div>
+          </div>
+        </div>
+      </div>
+      <div id="tab-priority" style="display:none">
+        <p style="font-size:.74rem;color:var(--t3);margin-bottom:12px;line-height:1.6">Drag to reorder fallback priority. Toggle to enable/disable providers.</p>
+        <div class="priolist" id="prioList"></div>
+      </div>
+      <div id="tab-vsettings" style="display:none">
+        <div class="sset"><label class="slabel">MAX OUTPUT TOKENS</label><input class="sinp" type="number" id="vTokens" value="4096" min="512" max="32768" step="256"/></div>
+        <div class="sset"><label class="slabel">SYSTEM PERSONA</label><textarea class="sinp starea" id="vPersona" rows="4">You are an elite autonomous full-stack AI developer agent. Provide complete, production-ready code.</textarea></div>
+        <div class="sset">
+          <label class="slabel">AUTO-FALLBACK</label>
+          <div style="display:flex;align-items:center;gap:9px;font-size:.77rem;color:var(--t2)">
+            <button class="pritog on" id="togFb"></button>
+            Automatically try next provider if current one fails
+          </div>
+        </div>
+        <div class="macts"><button class="hbtn" onclick="closeVault()">Cancel</button><button class="hbtn acc" onclick="saveVaultSettings()">Save Settings</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIMPLE SETTINGS -->
+<div class="ov" id="simpOv" onclick="ovClose(event,'simpOv')">
+  <div class="smod" onclick="event.stopPropagation()">
+    <h3>⚙ Quick Settings</h3>
+    <p>For API keys and model priority, use <strong style="color:#fde68a">🔑 API Vault</strong>.</p>
+    <label class="slabel">Max Tokens</label>
+    <input class="sinp" type="number" id="simpTokens" value="4096" min="512" max="32768" style="margin-bottom:11px"/>
+    <label class="slabel">System Persona</label>
+    <textarea class="sinp starea" id="simpPersona" rows="3">You are an elite autonomous full-stack AI developer agent. Provide complete, production-ready code.</textarea>
+    <div class="macts"><button class="hbtn" onclick="document.getElementById('simpOv').classList.remove('open')">Cancel</button><button class="hbtn acc" onclick="saveSimpSettings()">Save</button></div>
+  </div>
+</div>
+
+
+<script src="js/providers.js"></script>
+<script src="js/state.js"></script>
+<script src="js/rag.js"></script>
+<script src="js/init.js"></script>
+<script src="js/sessions.js"></script>
+<script src="js/performance.js"></script>
+<script src="js/filetree.js"></script>
+<script src="js/model-selection.js"></script>
+<script src="js/api-callers.js"></script>
+<script src="js/system-prompt.js"></script>
+<script src="js/input-mode.js"></script>
+<script src="js/model-picker.js"></script>
+<script src="js/prompt-agent.js"></script>
+<script src="js/streaming.js"></script>
+<script src="js/send.js"></script>
+<script src="js/render.js"></script>
+<script src="js/preview.js"></script>
+<script src="js/vault.js"></script>
+<script src="js/agents.js"></script>
+<script src="js/autonomous.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/file-handling.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/command-palette.js"></script>
+<script src="js/code-execution.js"></script>
+<script src="js/pipeline-editor.js"></script>
+<script src="js/collaboration.js"></script>
+<script src="js/pixel-vision.js"></script>
+<script src="js/self-critique.js"></script>
+<script src="js/dsp-blocks.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/keyboard-shortcuts.js"></script>
+<script src="js/context-meter.js"></script>
+<script src="js/personas.js"></script>
+<script src="js/branching.js"></script>
+<script src="js/analytics.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/diff.js"></script>
+<script src="js/welcome.js"></script>
+<script src="js/circuit-breaker.js"></script>
+<script src="js/task-detection.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/share.js"></script>
+<script src="js/boot.js"></script>
+<!-- ═══════════════════════════════════════
+     COMMAND PALETTE HTML
+═══════════════════════════════════════ -->
+<div id="cpOverlay" class="cp-overlay" onclick="if(event.target===this)cpClose()">
+  <div class="cp-box" role="dialog" aria-label="Command Palette">
+    <div class="cp-search-row">
+      <span class="cp-search-icon">⌘</span>
+      <input
+        id="cpInput"
+        class="cp-input"
+        type="text"
+        placeholder="Search commands, history, files…"
+        autocomplete="off" spellcheck="false"
+        oninput="cpFilter(this.value)"
+        onkeydown="cpKey(event)"
+      />
+      <span class="cp-kbd">ESC</span>
+    </div>
+    <div id="cpList" class="cp-results"></div>
+    <div class="cp-footer">
+      <kbd>↑↓</kbd> navigate &nbsp;
+      <kbd>↵</kbd> run &nbsp;
+      <kbd>Esc</kbd> close &nbsp;
+      <span style="margin-left:auto">Ctrl+K to toggle</span>
+    </div>
+  </div>
+</div>
+<!-- ═══════════════════════════════════════
+     LIVE DIFF VIEW MODAL
+═══════════════════════════════════════ -->
+<div id="diffOverlay" class="diff-modal-overlay" onclick="if(event.target===this)diffClose()">
+  <div class="diff-modal">
+    <div class="diff-modal-hdr">
+      <span id="diffFileIcon" style="font-size:.9rem;flex-shrink:0"></span>
+      <span class="diff-modal-title" id="diffFileName">diff</span>
+      <span class="diff-modal-badge diff-badge-adds" id="diffAdds"></span>
+      <span class="diff-modal-badge diff-badge-dels" id="diffDels"></span>
+      <div class="diff-modal-actions">
+        <button class="diff-btn accept" onclick="diffAcceptAll()" title="Accept all changes">✓ Accept All</button>
+        <button class="diff-btn reject" onclick="diffRejectAll()" title="Reject — keep original">✕ Reject</button>
+        <button class="diff-btn close"  onclick="diffClose()">—</button>
+      </div>
+    </div>
+    <div class="diff-content" id="diffContent"></div>
+    <div class="diff-summary-bar" id="diffSummaryBar"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     LIVE COLLABORATION MODAL
+═══════════════════════════════════════ -->
+<div id="collabOverlay" class="collab-overlay" onclick="if(event.target===this)collabClose()">
+  <div class="collab-modal">
+    <div class="collab-modal-hdr">
+      <span style="font-size:1.1rem">🤝</span>
+      <div class="collab-modal-title">Live Collaboration</div>
+      <button class="collab-modal-close" onclick="collabClose()">✕</button>
+    </div>
+    <div class="collab-modal-body">
+      <div>
+        <div style="font-size:.7rem;color:var(--t3);font-family:var(--fh);font-weight:700;margin-bottom:6px">Share this link to collaborate in real time</div>
+        <div class="collab-link-row">
+          <input class="collab-link-input" id="collabLinkInput" type="text" readonly placeholder="Start a session to get a link…"/>
+          <button class="collab-copy-btn" id="collabCopyBtn" onclick="collabCopyLink()">📋 Copy</button>
+        </div>
+        <div style="font-size:.6rem;color:var(--t4);font-family:var(--fc);margin-top:5px;line-height:1.5">
+          Anyone with this link can join and see messages sync in real time.<br>Works across browser tabs — no server required.
+        </div>
+      </div>
+
+      <div class="collab-peers" id="collabPeersSection">
+        <div class="collab-peers-title">Connected peers</div>
+        <div id="collabPeersList">
+          <div style="font-size:.68rem;color:var(--t4);font-family:var(--fc);padding:6px 0">No other peers yet — share the link above</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="collab-copy-btn" style="flex:1;background:var(--bg3);border:1px solid var(--line2);color:var(--t2)" onclick="collabStop()">⏹ Stop Session</button>
+        <button class="collab-copy-btn" style="flex:1" onclick="collabClose()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PIXEL-PERFECT VISION MODE MODAL
+═══════════════════════════════════════ -->
+<div id="ppvOverlay" class="ppv-overlay" onclick="if(event.target===this)ppvClose()">
+  <div class="ppv-modal">
+    <div class="ppv-hdr">
+      <span style="font-size:1.1rem">🎯</span>
+      <div style="flex:1">
+        <div class="ppv-hdr-title">Pixel-Perfect Vision Mode</div>
+      </div>
+      <button class="ppv-action-btn secondary" id="ppvGenerateBtn" onclick="ppvGenerate()" style="display:none">⚡ Generate Code</button>
+      <button class="ppv-action-btn secondary" id="ppvDiffBtn" onclick="ppvRunDiff()" style="display:none;margin-left:6px">📐 Run Pixel Diff</button>
+      <button class="ppv-close" onclick="ppvClose()">✕</button>
+    </div>
+    <div class="ppv-body" id="ppvBody">
+      <!-- Drop zone — shown before image is uploaded -->
+      <div class="ppv-drop" id="ppvDrop"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="ppvDropFile(event)"
+        onclick="document.getElementById('ppvFileInput').click()">
+        <input type="file" id="ppvFileInput" accept="image/*" style="display:none" onchange="ppvLoadFile(event)"/>
+        <div class="ppv-drop-icon">🎨</div>
+        <div class="ppv-drop-text">Drop your design here</div>
+        <div class="ppv-drop-sub">PNG, JPG, WebP, Figma screenshot<br>The AI will generate pixel-accurate code</div>
+      </div>
+    </div>
+    <div class="ppv-diff-row" id="ppvDiffRow" style="display:none">
+      <span class="ppv-diff-label">Match:</span>
+      <span class="ppv-diff-score" id="ppvScore">—</span>
+      <div class="ppv-diff-bar-wrap"><div class="ppv-diff-bar" id="ppvDiffBar" style="width:0%"></div></div>
+      <span class="ppv-diff-label" id="ppvDiffHint">Run pixel diff to compare</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODEL PICKER — flat overlay modal (available keys only) -->
+<div class="mpick-overlay" id="mpickOverlay" onclick="if(event.target===this)closeModelPicker()">
+  <div class="mpick-panel" id="mpickPanel">
+    <div class="mpick-hdr">
+      <span class="mpick-title">
+        🤖 Choose Model
+        <span class="mpick-title-source" id="mpickSourceLabel">Nav Bar</span>
+      </span>
+      <button class="mpick-close" onclick="closeModelPicker()">✕</button>
+    </div>
+    <!-- Search -->
+    <div class="mpick-search-wrap">
+      <span class="mpick-search-icon">🔍</span>
+      <input class="mpick-search" id="mpickSearch" type="text"
+        placeholder="Search models…" oninput="mpickFilter(this.value)"/>
+    </div>
+    <div class="mpick-body" id="mpickBody"></div>
+  </div>
+</div>
+
+<!-- Dynamic System Prompt block inspector (dev tooltip) -->
+<div class="dsp-indicator" id="dspIndicator">
+  <div class="dsp-indicator-title">Active Prompt Blocks</div>
+  <div id="dspBlockList"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     AGENT PIPELINE EDITOR MODAL
+═══════════════════════════════════════ -->
+<div id="apeOverlay" class="ape-overlay" onclick="if(event.target===this)apeClose()">
+  <div class="ape-modal">
+    <div class="ape-hdr">
+      <span style="font-size:1.1rem">🔧</span>
+      <div style="flex:1">
+        <div class="ape-hdr-title">Pipeline Editor</div>
+      </div>
+      <button class="ape-hdr-close" onclick="apeClose()">✕</button>
+    </div>
+    <div class="ape-body">
+      <!-- Agent palette -->
+      <div class="ape-palette">
+        <div class="ape-palette-title">Agents</div>
+        <div id="apePalette"></div>
+      </div>
+      <!-- Canvas -->
+      <div class="ape-canvas-wrap">
+        <div class="ape-canvas-toolbar">
+          <input class="ape-pipeline-name" id="apePipelineName" type="text" placeholder="Pipeline name…" maxlength="32"/>
+          <div class="ape-tb-sep"></div>
+          <button class="ape-tb-btn" onclick="apeAddStage()">＋ Stage</button>
+          <button class="ape-tb-btn" onclick="apeClear()">🗑 Clear</button>
+          <div style="flex:1"></div>
+          <button class="ape-tb-btn" onclick="apePreview()">▶ Preview</button>
+          <button class="ape-tb-btn primary" onclick="apeSave()">💾 Save & Use</button>
+        </div>
+        <div class="ape-canvas" id="apeCanvas">
+          <div class="ape-stages" id="apeStages"></div>
+        </div>
+      </div>
+      <!-- Saved pipelines -->
+      <div class="ape-saved">
+        <div class="ape-saved-title">Saved</div>
+        <div id="apeSavedList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     KEYBOARD SHORTCUT MAP MODAL
+═══════════════════════════════════════ -->
+<div id="kmOverlay" class="km-overlay" onclick="if(event.target===this)kmClose()">
+  <div class="km-modal">
+    <div class="km-hdr">
+      <span style="font-size:1.1rem">⌨️</span>
+      <div style="flex:1">
+        <div class="km-hdr-title">Keyboard Shortcuts</div>
+        <div class="km-hdr-sub">Every shortcut in Qrox AI</div>
+      </div>
+      <div style="font-size:.62rem;color:var(--t4);font-family:var(--fc);margin-right:8px">Press <span class="km-key" style="display:inline-flex">?</span> to open</div>
+      <button class="km-hdr-close" onclick="kmClose()">✕</button>
+    </div>
+    <div class="km-body" id="kmBody"></div>
+    <div class="km-footer">
+      <div class="km-footer-item"><span class="km-key mod">Ctrl</span><span class="km-plus">or</span><span class="km-key mod">⌘</span><span>on Mac</span></div>
+      <div class="km-footer-item"><span class="km-key special">↵</span><span>Enter</span></div>
+      <div class="km-footer-item"><span class="km-key special">⇧</span><span>Shift</span></div>
+      <div class="km-footer-item"><span class="km-key special">Esc</span><span>Escape</span></div>
+      <div style="margin-left:auto">Qrox AI</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     ANALYTICS DASHBOARD MODAL
+═══════════════════════════════════════ -->
+<div id="analyticsOverlay" class="analytics-overlay" onclick="if(event.target===this)analyticsClose()">
+  <div class="analytics-modal">
+    <div class="analytics-hdr">
+      <span style="font-size:1.1rem">📊</span>
+      <div style="flex:1;min-width:0">
+        <div class="analytics-hdr-title">Chat Analytics</div>
+        <div class="analytics-hdr-sub" id="analyticsSubtitle">Loading…</div>
+      </div>
+      <button class="analytics-hdr-close" onclick="analyticsClose()">✕</button>
+    </div>
+    <div class="analytics-body" id="analyticsBody">
+      <div class="an-empty"><span style="font-size:2rem">📊</span><span>Loading…</span></div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ═══════════════════════════════════════
+     SHARE MODAL
+═══════════════════════════════════════ -->
+<div id="shareOverlay" class="share-overlay" onclick="if(event.target===this)shareClose()">
+  <div class="share-modal">
+    <div class="share-modal-hdr">
+      <div class="share-modal-title">🔗 Share Chat</div>
+      <button class="share-modal-close" onclick="shareClose()">✕</button>
+    </div>
+    <div class="share-modal-body">
+      <div class="share-info">
+        <div class="share-info-icon">🔒</div>
+        <div class="share-info-text">
+          The link encodes your conversation directly — <strong>no server, no account needed.</strong>
+          Anyone with the link can read the full chat in a clean viewer.
+        </div>
+      </div>
+      <div class="share-stats" id="shareStats"></div>
+      <div class="share-url-row">
+        <input id="shareUrlInput" class="share-url-input" type="text" readonly onclick="this.select()" placeholder="Generating link…"/>
+        <button class="share-copy-btn" id="shareCopyBtn" onclick="shareCopyUrl()">📋 Copy</button>
+      </div>
+      <div class="share-actions">
+        <button class="share-action-btn" onclick="shareOpenInTab()">↗ Open in new tab</button>
+        <button class="share-action-btn secondary" onclick="shareClose()">Done</button>
+      </div>
+      <div class="share-warning" id="shareWarning" style="display:none">
+        ⚠ Chat is large — link may be too long for some browsers. Consider exporting as Markdown instead.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SHARED CHAT VIEWER (read-only)
+     Shown when URL contains #share=...
+═══════════════════════════════════════ -->
+<div id="sharedViewOverlay" class="shared-view-overlay" style="display:none">
+  <div class="shared-view-hdr">
+    <div class="shared-view-brand">
+      <span class="shared-view-logo">🤖</span>
+      <div>
+        <div class="shared-view-title" id="sharedViewTitle">Shared Chat</div>
+        <div class="shared-view-sub" id="sharedViewSub"></div>
+      </div>
+    </div>
+    <div class="shared-view-actions">
+      <button class="shared-view-btn" onclick="sharedImport()">⬇ Import to my chats</button>
+      <button class="shared-view-btn secondary" onclick="shareCopyCurrentUrl()">🔗 Copy link</button>
+      <button class="shared-view-btn secondary" onclick="sharedClose()">✕ Close viewer</button>
+    </div>
+  </div>
+  <div class="shared-view-chat" id="sharedViewChat"></div>
+</div>
+
+
+<div id="mmLightbox" class="mm-lightbox" onclick="if(event.target===this||event.target.id==='mmLightbox')mmLbClose()">
+  <button class="mm-lightbox-close" onclick="mmLbClose()">✕</button>
+  <img id="mmLbImg" class="mm-lightbox-img" src="" alt=""/>
+  <div id="mmLbName" class="mm-lightbox-name"></div>
+</div>
+</body>
+
+</body>
+</html>
